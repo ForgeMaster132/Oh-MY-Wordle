@@ -125,5 +125,3 @@ while True:
                 if event.type == pygame.KEYDOWN:
                     end_game = True
                     break
-
-pygame.display.update()
