@@ -28,6 +28,59 @@ pygame.init()
 screen = pygame.display.set_mode([SCREEN_WIDTH, SCREEN_HEIGHT])
 pygame.display.set_caption("Oh MY Wordle")
 
+
+def display_end_popup(player_won, answer):
+    """Show a popup with the result of the game."""
+    overlay = pygame.Surface((SCREEN_WIDTH, SCREEN_HEIGHT))
+    overlay.set_alpha(180)
+    overlay.fill(COLOR_BG)
+    screen.blit(overlay, (0, 0))
+
+    popup_w, popup_h = 400, 200
+    popup_rect = pygame.Rect(
+        (SCREEN_WIDTH - popup_w) // 2,
+        (SCREEN_HEIGHT - popup_h) // 2,
+        popup_w,
+        popup_h,
+    )
+    pygame.draw.rect(
+        screen,
+        COLOR_BG,
+        popup_rect,
+        border_radius=BORDER_RADIUS,
+    )
+    pygame.draw.rect(
+        screen,
+        COLOR_BORDER,
+        popup_rect,
+        width=BORDER_WIDTH,
+        border_radius=BORDER_RADIUS,
+    )
+
+    title_font = pygame.font.SysFont("freesansbold", 60)
+    small_font = pygame.font.SysFont("freesansbold", 30)
+    title_text = title_font.render(
+        "Winner!" if player_won else "Loser!", True, TEXT_COLOR
+    )
+    title_rect = title_text.get_rect(center=(popup_rect.centerx, popup_rect.top + 60))
+    screen.blit(title_text, title_rect)
+
+    word_text = small_font.render(
+        f"The word was {answer.upper()}", True, TEXT_COLOR
+    )
+    word_rect = word_text.get_rect(center=(popup_rect.centerx, popup_rect.top + 110))
+    screen.blit(word_text, word_rect)
+
+    prompt_text = small_font.render(
+        "Press any key to play again", True, TEXT_COLOR
+    )
+    prompt_rect = prompt_text.get_rect(
+        center=(popup_rect.centerx, popup_rect.bottom - 30)
+    )
+    screen.blit(prompt_text, prompt_rect)
+
+    pygame.display.update()
+
 def reset_board():
     """Create a fresh game board and return the blocks and starting position."""
     position = 0
@@ -139,22 +192,16 @@ while True:
                         position += 1
 
         pygame.display.update()
-    if player_won:
-        print("Winner!")
-    else:
-        print("Loser!")
-    
-    print(random_word)
+
+    display_end_popup(player_won, random_word)
 
     end_game = False
 
     while not end_game:
         for event in pygame.event.get():
-            # if user types QUIT then the screen will close
-                if event.type == pygame.QUIT:
-                    pygame.quit()
-                    sys.exit()
-
-                if event.type == pygame.KEYDOWN:
-                    end_game = True
-                    break
+            if event.type == pygame.QUIT:
+                pygame.quit()
+                sys.exit()
+            if event.type == pygame.KEYDOWN:
+                end_game = True
+                break
