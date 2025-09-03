@@ -1,0 +1,23 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>Oh MY Wordle Web</title>
+</head>
+<body>
+  <h1>Oh MY Wordle (Web)</h1>
+  {% if message %}
+  <p>{{ message }}</p>
+  {% endif %}
+  <form method="post">
+    <input name="guess" maxlength="5" autofocus>
+    <button type="submit">Guess</button>
+  </form>
+  <ul>
+  {% for guess, result in guesses %}
+    <li>{{ guess }} - {{ result|join(', ') }}</li>
+  {% endfor %}
+  </ul>
+  <a href="{{ url_for('reset') }}">Reset game</a>
+</body>
+</html>
