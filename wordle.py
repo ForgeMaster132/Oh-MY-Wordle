@@ -3,28 +3,36 @@ import sys
 import random
 from word_lists import list_of_words, list_of_guessable_words_that_cant_be_answers
 
-BLOCK_SIZE = 100
+# visual configuration
+BLOCK_SIZE = 80
 BLOCK_GAP = 5
 COLS = 5
 ROWS = 6
 SCREEN_WIDTH = COLS * (BLOCK_SIZE + BLOCK_GAP) - BLOCK_GAP
 SCREEN_HEIGHT = ROWS * (BLOCK_SIZE + BLOCK_GAP) - BLOCK_GAP
 
+# colours
+COLOR_BG = pygame.Color("#121213")
+COLOR_BORDER = pygame.Color("#3a3a3c")
+COLOR_CORRECT_SPOT = pygame.Color("#6aaa64")
+COLOR_CORRECT = pygame.Color("#c9b458")
+COLOR_ABSENT = pygame.Color("#3a3a3c")
+TEXT_COLOR = pygame.Color("white")
+
+# drawing configuration
+BORDER_RADIUS = 8
+BORDER_WIDTH = 3
+
 
 pygame.init()
 screen = pygame.display.set_mode([SCREEN_WIDTH, SCREEN_HEIGHT])
-
-pygame.display.set_caption('Oh MY Wordle')
-
-color_correct_spot = pygame.Color('chartreuse4')
-color_correct = pygame.Color('yellow')
-color = pygame.Color('grey')
+pygame.display.set_caption("Oh MY Wordle")
 
 def reset_board():
     """Create a fresh game board and return the blocks and starting position."""
     position = 0
     blocks = []
-    screen.fill((0, 0, 0))
+    screen.fill(COLOR_BG)
     for row in range(ROWS):
         for col in range(COLS):
             rect = pygame.Rect(
@@ -33,7 +41,13 @@ def reset_board():
                 BLOCK_SIZE,
                 BLOCK_SIZE,
             )
-            pygame.draw.rect(screen, color, rect)
+            pygame.draw.rect(
+                screen,
+                COLOR_BORDER,
+                rect,
+                width=BORDER_WIDTH,
+                border_radius=BORDER_RADIUS,
+            )
             blocks.append(rect)
     return blocks, position
 
@@ -50,23 +64,30 @@ def evaluate_guess(blocks, random_word_array, letters_guessed, row_counter):
     for idx, guess in enumerate(letters_guessed):
         rect = determine_block(row_start + idx, blocks)
         if guess == random_word_array[idx]:
-            pygame.draw.rect(screen, color_correct_spot, rect)
+            fill = COLOR_CORRECT_SPOT
             correct_counter += 1
         elif guess in random_word_array:
-            pygame.draw.rect(screen, color_correct, rect)
+            fill = COLOR_CORRECT
         else:
-            pygame.draw.rect(screen, color, rect)
-        text = font.render(guess.upper(), True, (0, 0, 0))
-        screen.blit(text, rect.center)
+            fill = COLOR_ABSENT
+        pygame.draw.rect(
+            screen, fill, rect, border_radius=BORDER_RADIUS
+        )
+        pygame.draw.rect(
+            screen, fill, rect, width=BORDER_WIDTH, border_radius=BORDER_RADIUS
+        )
+        text = font.render(guess.upper(), True, TEXT_COLOR)
+        text_rect = text.get_rect(center=rect.center)
+        screen.blit(text, text_rect)
     return correct_counter != COLS, correct_counter == COLS
 
 while True:
     player_won = False
     playing = True
-    font = pygame.font.SysFont('Arial', 40)
-    blocks,position = reset_board()
+    font = pygame.font.SysFont("freesansbold", 60)
+    blocks, position = reset_board()
     row_counter = 0
-    random_number = random.randint(0,len(list_of_words)-1)
+    random_number = random.randint(0, len(list_of_words) - 1)
     random_word = list_of_words[random_number]
     random_word_array = []
     random_word_array = list(random_word)
@@ -94,14 +115,26 @@ while True:
                     row_start = row_counter * COLS
                     if position < row_start:
                         position = row_start
-                    pygame.draw.rect(screen, color, determine_block(position, blocks))
+                    rect = determine_block(position, blocks)
+                    pygame.draw.rect(
+                        screen, COLOR_BG, rect, border_radius=BORDER_RADIUS
+                    )
+                    pygame.draw.rect(
+                        screen,
+                        COLOR_BORDER,
+                        rect,
+                        width=BORDER_WIDTH,
+                        border_radius=BORDER_RADIUS,
+                    )
                     letters_guessed.pop()
                 elif pygame.K_a <= event.key <= pygame.K_z and row_counter < ROWS:
                     row_limit = (row_counter + 1) * COLS
                     if position < row_limit:
                         letter = chr(event.key)
-                        text = font.render(letter.upper(), True, (0, 0, 0))
-                        screen.blit(text, determine_block(position, blocks).center)
+                        rect = determine_block(position, blocks)
+                        text = font.render(letter.upper(), True, TEXT_COLOR)
+                        text_rect = text.get_rect(center=rect.center)
+                        screen.blit(text, text_rect)
                         letters_guessed.append(letter)
                         position += 1
 
